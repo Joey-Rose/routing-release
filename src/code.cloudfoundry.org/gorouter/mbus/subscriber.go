@@ -33,6 +33,7 @@ type RegistryMessage struct {
 	Protocol                string              `json:"protocol"`
 	RouteServiceURL         string              `json:"route_service_url"`
 	ServerCertDomainSAN     string              `json:"server_cert_domain_san"`
+	HostHeaderOverride      string              `json:"host_header_override"`
 	StaleThresholdInSeconds int                 `json:"stale_threshold_in_seconds"`
 	TLSPort                 uint16              `json:"tls_port"`
 	Tags                    map[string]string   `json:"tags"`
@@ -96,6 +97,7 @@ func (rm *RegistryMessage) MakeEndpoint(http2Enabled bool, globalRoutingAlgo str
 		Port:                    port,
 		Protocol:                protocol,
 		ServerCertDomainSAN:     rm.ServerCertDomainSAN,
+		HostHeaderOverride:      rm.HostHeaderOverride,
 		PrivateInstanceId:       rm.PrivateInstanceID,
 		PrivateInstanceIndex:    rm.PrivateInstanceIndex,
 		Tags:                    rm.Tags,

@@ -111,6 +111,9 @@ type Endpoint struct {
 	Protocol               string
 	Tags                   map[string]string
 	ServerCertDomainSAN    string
+	// HostHeaderOverride, when non-empty, replaces the client's original Host header with this
+	// value before the request is proxied to this endpoint. See EndpointOpts.HostHeaderOverride.
+	HostHeaderOverride     string
 	PrivateInstanceId      string
 	StaleThreshold         time.Duration
 	RouteServiceUrl        string
@@ -166,6 +169,7 @@ func (e *Endpoint) Equal(e2 *Endpoint) bool {
 		e.addr == e2.addr &&
 		e.Protocol == e2.Protocol &&
 		e.ServerCertDomainSAN == e2.ServerCertDomainSAN &&
+		e.HostHeaderOverride == e2.HostHeaderOverride &&
 		e.PrivateInstanceId == e2.PrivateInstanceId &&
 		e.StaleThreshold == e2.StaleThreshold &&
 		e.RouteServiceUrl == e2.RouteServiceUrl &&
@@ -242,6 +246,11 @@ type EndpointOpts struct {
 	Port                    uint16
 	Protocol                string
 	ServerCertDomainSAN     string
+	// HostHeaderOverride, when set, is the Host/:authority gorouter sends to this backend
+	// instead of the client's original Host header. Needed when the backend does its own
+	// Host-based virtual hosting under a different hostname than the one clients dial (e.g.
+	// an Envoy/Gateway API backend multiplexing many logical destinations on one listener).
+	HostHeaderOverride      string
 	PrivateInstanceId       string
 	PrivateInstanceIndex    string
 	Tags                    map[string]string
@@ -271,6 +280,7 @@ func NewEndpoint(opts *EndpointOpts) *Endpoint {
 		Tags:                   opts.Tags,
 		useTls:                 opts.UseTLS,
 		ServerCertDomainSAN:    opts.ServerCertDomainSAN,
+		HostHeaderOverride:     opts.HostHeaderOverride,
 		PrivateInstanceId:      opts.PrivateInstanceId,
 		PrivateInstanceIndex:   opts.PrivateInstanceIndex,
 		StaleThreshold:         time.Duration(opts.StaleThresholdInSeconds) * time.Second,
@@ -812,6 +822,7 @@ func (e *Endpoint) MarshalJSON() ([]byte, error) {
 		IsolationSegment       string            `json:"isolation_segment,omitempty"`
 		PrivateInstanceId      string            `json:"private_instance_id,omitempty"`
 		ServerCertDomainSAN    string            `json:"server_cert_domain_san,omitempty"`
+		HostHeaderOverride     string            `json:"host_header_override,omitempty"`
 		LoadBalancingAlgorithm string            `json:"load_balancing_algorithm,omitempty"`
 		HashHeader             string            `json:"hash_header,omitempty"`
 		HashBalance            *float64          `json:"hash_balance,omitempty"` // omitempty on a float64 field will omit the field when the value is 0.0, to keep 0 use pointer of float64
@@ -829,6 +840,7 @@ func (e *Endpoint) MarshalJSON() ([]byte, error) {
 	jsonObj.IsolationSegment = e.IsolationSegment
 	jsonObj.PrivateInstanceId = e.PrivateInstanceId
 	jsonObj.ServerCertDomainSAN = e.ServerCertDomainSAN
+	jsonObj.HostHeaderOverride = e.HostHeaderOverride
 	jsonObj.LoadBalancingAlgorithm = e.LoadBalancingAlgorithm
 	jsonObj.HashHeader = e.HashHeaderName
 	jsonObj.RoutePolicyScope = e.RoutePolicyScope

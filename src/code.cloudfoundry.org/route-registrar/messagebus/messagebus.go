@@ -39,6 +39,7 @@ type Message struct {
 	RouteServiceUrl     string            `json:"route_service_url,omitempty"`
 	PrivateInstanceId   string            `json:"private_instance_id"`
 	ServerCertDomainSAN string            `json:"server_cert_domain_san,omitempty"`
+	HostHeaderOverride  string            `json:"host_header_override,omitempty"`
 	AvailabilityZone    string            `json:"availability_zone,omitempty"`
 	Options             map[string]string `json:"options,omitempty"`
 }
@@ -119,6 +120,7 @@ func (m msgBus) SendMessage(subject string, route config.Route, privateInstanceI
 		Tags:                route.Tags,
 		RouteServiceUrl:     route.RouteServiceUrl,
 		ServerCertDomainSAN: route.ServerCertDomainSAN,
+		HostHeaderOverride:  route.HostHeaderOverride,
 		PrivateInstanceId:   privateInstanceId,
 		AvailabilityZone:    m.availabilityZone,
 		Options:             routeOptions,

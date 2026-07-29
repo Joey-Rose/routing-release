@@ -431,6 +431,13 @@ func (rt *roundTripper) CancelRequest(request *http.Request) {
 
 func (rt *roundTripper) backendRoundTrip(request *http.Request, endpoint *route.Endpoint, iter route.EndpointIterator, logger *slog.Logger) (*http.Response, error) {
 	request.URL.Host = endpoint.CanonicalAddr()
+	// Backends that do their own Host-based virtual hosting under a different hostname than
+	// the one the client dialed (e.g. an Envoy/Gateway API backend multiplexing many logical
+	// destinations behind one shared listener) need the request's Host/:authority rewritten;
+	// otherwise it's forwarded unchanged, same as request.URL.Host/ServerCertDomainSAN.
+	if endpoint.HostHeaderOverride != "" {
+		request.Host = endpoint.HostHeaderOverride
+	}
 	request.Header.Set("X-CF-ApplicationID", endpoint.ApplicationId)
 	request.Header.Set("X-CF-InstanceIndex", endpoint.PrivateInstanceIndex)
 	setRequestXCfInstanceId(request, endpoint)

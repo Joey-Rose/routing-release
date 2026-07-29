@@ -66,6 +66,7 @@ type RouteSchema struct {
 	RegistrationInterval string             `json:"registration_interval,omitempty" yaml:"registration_interval,omitempty"`
 	HealthCheck          *HealthCheckSchema `json:"health_check,omitempty" yaml:"health_check,omitempty"`
 	ServerCertDomainSAN  string             `json:"server_cert_domain_san,omitempty" yaml:"server_cert_domain_san,omitempty"`
+	HostHeaderOverride   string             `json:"host_header_override,omitempty" yaml:"host_header_override,omitempty"`
 	SniRoutableSan       string             `json:"sni_routable_san,omitempty" yaml:"sni_routable_san,omitempty"`
 	SniRewriteSan        string             `json:"sni_rewrite_san,omitempty" yaml:"sni_rewrite_san,omitempty"`
 	TerminateFrontendTLS bool               `json:"terminate_frontend_tls,omitempty" yaml:"terminate_frontend_tls,omitempty"`
@@ -154,6 +155,12 @@ type Route struct {
 	RegistrationInterval time.Duration
 	HealthCheck          *HealthCheck
 	ServerCertDomainSAN  string
+	// HostHeaderOverride, when set, is the Host/:authority value gorouter sends to the backend
+	// instead of forwarding the client's original Host header unchanged. Needed when the
+	// backend does its own Host-based virtual hosting (e.g. an Envoy/Gateway API backend
+	// multiplexing many logical destinations behind one shared listener) under a different
+	// hostname than the one CF clients dial.
+	HostHeaderOverride   string
 	SniRewriteSan        string
 	TerminateFrontendTLS bool
 	ALPNs                []string
@@ -359,6 +366,7 @@ func RouteFromSchema(r RouteSchema, index int, host string) (*Route, error) {
 		ExternalPort:         r.ExternalPort,
 		RouteServiceUrl:      r.RouteServiceUrl,
 		ServerCertDomainSAN:  r.ServerCertDomainSAN,
+		HostHeaderOverride:   r.HostHeaderOverride,
 		SniRewriteSan:        r.SniRewriteSan,
 		RegistrationInterval: registrationInterval,
 		HealthCheck:          healthCheck,
